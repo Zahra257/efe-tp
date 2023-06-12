@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+    <style>
+        body {
+        font-family: Arial, sans-serif;
+        background-color: #f2f2f2;
+        margin: 0;
+        padding: 20px;
+        }
+
+        #drop-area {
+        width: 400px;
+        height: 200px;
+        border: 2px dashed #ccc;
+        text-align: center;
+        padding: 10px;
+        margin: 0 auto 20px;
+        background-color: #ffffff;
+        color: #999999;
+        }
+
+        #drop-area p {
+        margin: 0;
+        line-height: 180px;
+        }
+        .file-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .file-section {
+        width: calc(33.33% - 20px);
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin-bottom: 20px;
+        background-color: #ffffff;
+        }
+
+        .file-name {
+        font-weight: bold;
+        margin-bottom: 5px;
+        }
+
+        .file-preview {
+        max-width: 100%;
+        max-height: 100px;
+        }
+
+        #save-button {
+        display: none;
+        margin-bottom: 10px;
+        }
+
+        #show-button {
+        display: none;
+        margin-bottom: 10px;
+        }
+
+        #saved-files {
+        display: none;
+        margin-top: 20px;
+        border: 1px solid #ccc;
+        padding: 10px;
+        background-color: #ffffff;
+        }
+    </style>
+    </head>
+    <body>
+    <div id="drop-area">
+        <p>Drag and drop a file here, or click to select a file</p>
+    </div>
+
+    <button id="save-button">Save File</button>
+    <button id="show-button">Show Saved Files</button>
+
+    <div id="file-sections"></div>
+
+    <div id="saved-files">
+        <h3>Saved Files:</h3>
+        <ul id="saved-list"></ul>
+    </div>
+
+    <script>
+        var selectedFile = null;
+
+        // Prevent default drag behaviors
+        document.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        });
+
+        // Handle file drop event
+        document.addEventListener('drop', function(e) {
+        e.preventDefault();
+        selectedFile = e.dataTransfer.files[0];
+        createFileSection(selectedFile);
+        document.getElementById('save-button').style.display = 'block';
+        });
+
+        // Handle file selection event
+        document.getElementById('drop-area').addEventListener('click', function() {
+        var fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*'; // Specify file types to accept (e.g., images)
+
+        // Handle file input change event
+        fileInput.addEventListener('change', function(e) {
+            selectedFile = e.target.files[0];
+            createFileSection(selectedFile);
+            document.getElementById('save-button').style.display = 'block';
+        });
+
+        fileInput.click();
+        });
+
+        // Create a file section and display the file
+        function createFileSection(file) {
+        var fileSections = document.getElementById('file-sections');
+
+        // Create a new section for the file
+        var section = document.createElement('div');
+        section.classList.add('file-section');
+
+        // Display the file name
+        var fileName = document.createElement('div');
+        fileName.classList.add('file-name');
+        fileName.textContent = 'File Name: ' + file.name;
+        section.appendChild(fileName);
+
+        // Display the file preview (if it's an image)
+        if (file.type.startsWith('image/')) {
+            var filePreview = document.createElement('img');
+            filePreview.classList.add('file-preview');
+            filePreview.src = URL.createObjectURL(file);
+            section.appendChild(filePreview);
+        }
+
+        fileSections.appendChild(section);
+
+        // Show the "Show Saved Files" button after uploading a file
+        document.getElementById('show-button').style.display = 'block';
+        }
+
+        // Save file button click event
+        document.getElementById('save-button').addEventListener('click', function() {
+        var confirmSave = confirm('Do you want to save the file?');
+        if (confirmSave) {
+            var fileSections = document.getElementsByClassName('file-section');
+            var savedFiles = [];
+
+            for (var i = 0; i < fileSections.length; i++) {
+            var fileSection = fileSections[i];
+            var fileName = fileSection.querySelector('.file-name').textContent;
+            savedFiles.push(fileName);
+            }
+
+            savedFiles.push(selectedFile.name);
+            localStorage.setItem('savedFiles', JSON.stringify(savedFiles));
+            alert('File saved successfully!');
+        } else {
+            alert('File not saved.');
+        }
+        });
+
+        // Show saved files button click event
+        document.getElementById('show-button').addEventListener('click', function() {
+        var savedFiles = JSON.parse(localStorage.getItem('savedFiles'));
+        var savedList = document.getElementById('saved-list');
+
+        savedList.innerHTML = '';
+
+        if (savedFiles && savedFiles.length > 0) {
+            savedFiles.forEach(function(file) {
+            var listItem = document.createElement('li');
+            listItem.textContent = file;
+            savedList.appendChild(listItem);
+            });
+
+            document.getElementById('saved-files').style.display = 'block';
+        } else {
+            document.getElementById('saved-files').style.display = 'none';
+            alert('No files saved yet.');
+        }
+        });
+
+
+        
+
+        var selectedFile = null;
+        var userLocation = null; // Variable to store user's geolocation// ...
+
+        // Geolocation API
+        if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            userLocation = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+            };
+            displayUserLocation(userLocation); // Display the user's geolocation
+        });
+        } else {
+        console.log("Geolocation is not supported by this browser.");
+        }
+
+        // ...
+
+        // Function to display the user's geolocation
+        function displayUserLocation(location) {
+        var geolocationSection = document.createElement('div');
+        geolocationSection.classList.add('file-section');
+
+        var locationTitle = document.createElement('h3');
+        locationTitle.textContent = 'User Location:';
+        geolocationSection.appendChild(locationTitle);
+
+        var latitude = document.createElement('p');
+        latitude.textContent = 'Latitude: ' + location.latitude;
+        geolocationSection.appendChild(latitude);
+
+        var longitude = document.createElement('p');
+        longitude.textContent = 'Longitude: ' + location.longitude;
+        geolocationSection.appendChild(longitude);
+
+        var fileSections = document.getElementById('file-sections');
+        fileSections.appendChild(geolocationSection);
+        }
+
+    </script>
+    </body>
+    </html>
